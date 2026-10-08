@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CareAtZero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blue-900: #16265C;
+    --blue-700: #1E3A8A;
+    --blue-600: #2952CC;
+    --blue-500: #3B6BE0;
+    --blue-100: #E6EDFB;
+    --red-600: #D8362A;
+    --red-50: #FDEDEB;
+    --green-600: #1B8A4C;
+    --green-50: #E9F7EF;
+    --amber-500: #E0A106;
+    --ink: #14213D;
+    --ink-soft: #4B5670;
+    --ink-faint: #7B84A0;
+    --line: #E2E6F0;
+    --page: #F6F7FB;
+    --card: #FFFFFF;
+    --radius: 14px;
+    --shadow: 0 1px 2px rgba(20,33,61,0.04), 0 8px 24px rgba(20,33,61,0.06);
+  }
+  [data-theme="dark"] {
+    --ink: #EAEDF7; --ink-soft: #AEB6CC; --ink-faint: #838CA6; --line: #2B324A;
+    --page: #0F1424; --card: #171D30; --blue-100: #1B2A4D; --green-50: #123424; --red-50: #3A1A17;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #EAEDF7; --ink-soft: #AEB6CC; --ink-faint: #838CA6; --line: #2B324A;
+      --page: #0F1424; --card: #171D30; --blue-100: #1B2A4D; --green-50: #123424; --red-50: #3A1A17;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--page); color: var(--ink);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    line-height: 1.5; -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, .brand, .stat-num, .btn { font-family: 'Manrope', 'Inter', sans-serif; }
+  a { color: var(--blue-600); }
+  button { font-family: inherit; cursor: pointer; }
+  :focus-visible { outline: 2.5px solid var(--blue-500); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; } }
+
+  .wrap { max-width: 920px; margin: 0 auto; padding: 0 20px; }
+
+  .hero { background: linear-gradient(135deg, var(--blue-900), var(--blue-600)); color: white; padding: 34px 0 26px; }
+  .hero-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .brand { font-size: 26px; font-weight: 800; letter-spacing: -0.01em; display: flex; align-items: center; gap: 8px; }
+  .badge { font-size: 12.5px; font-weight: 600; background: rgba(255,255,255,0.16); border: 1px solid rgba(255,255,255,0.3); padding: 5px 12px; border-radius: 999px; white-space: nowrap; }
+  .tagline { margin: 10px 0 0; font-size: 15.5px; color: rgba(255,255,255,0.88); max-width: 46ch; }
+  .nav { display: flex; gap: 6px; margin-top: 22px; flex-wrap: wrap; }
+  .nav button { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.16); color: rgba(255,255,255,0.85); padding: 9px 16px; border-radius: 10px; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 7px; transition: background 120ms ease; }
+  .nav button:hover { background: rgba(255,255,255,0.16); }
+  .nav button[aria-current="page"] { background: white; color: var(--blue-700); }
+
+  main { padding: 26px 0 70px; }
+
+  .emergency { background: var(--red-50); border: 1px solid #F3C6C0; border-left: 4px solid var(--red-600); border-radius: 10px; padding: 13px 16px; font-size: 14px; color: var(--ink); margin-bottom: 26px; display: flex; gap: 10px; align-items: flex-start; }
+  .emergency b { color: var(--red-600); }
+  .info-banner { background: var(--blue-100); border: 1px solid #C7D6F5; border-radius: 10px; padding: 12px 16px; font-size: 13.5px; color: var(--ink-soft); margin-bottom: 20px; }
+
+  section.block { margin-bottom: 40px; }
+  .block-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 14px; }
+  .block-icon { font-size: 19px; }
+  .block-title { font-size: 19px; font-weight: 800; margin: 0; }
+  .block-sub { font-size: 13.5px; color: var(--ink-soft); margin: -8px 0 16px; }
+
+  .service-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 560px) { .service-grid { grid-template-columns: 1fr; } }
+  .service-card { background: var(--card); border: 1.5px solid var(--line); border-radius: 12px; padding: 14px 16px; text-align: left; display: flex; gap: 12px; align-items: center; transition: border-color 120ms ease, background 120ms ease; }
+  .service-card:hover { border-color: var(--blue-500); }
+  .service-card[aria-pressed="true"] { border-color: var(--blue-600); background: var(--blue-100); }
+  .service-icon { font-size: 21px; }
+  .service-name { font-weight: 700; font-size: 14.5px; }
+  .service-desc { font-size: 12.5px; color: var(--ink-soft); margin-top: 1px; }
+
+  .search-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); }
+  .search-step { font-size: 13px; font-weight: 700; color: var(--ink-soft); margin: 0 0 12px; }
+  .search-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  @media (max-width: 640px) { .search-row { grid-template-columns: 1fr; } }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label { font-size: 12.5px; font-weight: 600; color: var(--ink-soft); }
+  .field input, .field select { border: 1.5px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 14.5px; background: var(--card); color: var(--ink); font-family: inherit; }
+  .field input:focus, .field select:focus { border-color: var(--blue-500); }
+  .btn-primary { background: var(--red-600); color: white; border: none; border-radius: 10px; padding: 0 20px; font-size: 14.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; height: 44px; white-space: nowrap; }
+  .btn-primary:hover { background: #C22D22; }
+  .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; }
+  .find-cta-row { margin-top: 12px; }
+
+  .filters-toggle { margin-top: 14px; }
+  .filters-toggle summary { cursor: pointer; font-size: 13px; font-weight: 700; color: var(--blue-600); list-style: none; }
+  .filters-toggle summary::-webkit-details-marker { display: none; }
+  .filters-toggle summary::before { content: '▸ '; }
+  .filters-toggle[open] summary::before { content: '▾ '; }
+  .filters-body { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+  @media (max-width: 560px) { .filters-body { grid-template-columns: 1fr; } }
+  .checkbox-field { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--ink); }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  @media (max-width: 640px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+  .stat-card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px 14px; text-align: center; }
+  .stat-num { font-size: 25px; font-weight: 800; color: var(--blue-600); }
+  .stat-label { font-size: 12px; color: var(--ink-soft); margin-top: 3px; }
+
+  .card-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  @media (max-width: 760px) { .card-grid { grid-template-columns: 1fr; } }
+  .ev-card, .result-card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 8px; box-shadow: var(--shadow); }
+  .ev-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .pill-group { display: flex; gap: 6px; flex-wrap: wrap; }
+  .pill { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+  .pill-date { background: var(--blue-100); color: var(--blue-700); }
+  .pill-free { background: var(--green-50); color: var(--green-600); }
+  .pill-vlow { background: #FFF6E5; color: var(--amber-500); }
+  .pill-sliding { background: #FCEAE0; color: #B85A17; }
+  .pill-outline { background: transparent; color: var(--ink-soft); border: 1px solid var(--line); }
+  .pill-score { background: var(--green-50); color: var(--green-600); font-weight: 800; }
+  .ev-name { font-weight: 700; font-size: 15px; margin: 2px 0 0; }
+  .ev-meta { font-size: 12.5px; color: var(--ink-soft); display: flex; gap: 6px; align-items: flex-start; }
+  .btn-outline { border: 1.5px solid var(--line); background: transparent; color: var(--ink); padding: 8px 14px; border-radius: 9px; font-size: 13px; font-weight: 600; }
+  .btn-outline:hover { border-color: var(--blue-500); color: var(--blue-600); }
+  .action-row { display: flex; gap: 8px; margin-top: 4px; flex-wrap: wrap; }
+  .action-row .btn-primary { padding: 0 16px; height: 38px; font-size: 13px; }
+  .action-row .btn-outline { display: flex; align-items: center; gap: 6px; }
+
+  .why-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  @media (max-width: 760px) { .why-grid { grid-template-columns: 1fr; } }
+  .why-col h3 { font-size: 15px; margin: 10px 0 8px; display: flex; gap: 8px; align-items: center; }
+  .why-col ul { margin: 0; padding-left: 18px; font-size: 13.5px; color: var(--ink-soft); }
+  .why-col li { margin-bottom: 5px; }
+  .why-icon { width: 30px; height: 30px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 15px; flex: none; }
+
+  .why-toggle { background: none; border: none; color: var(--blue-600); font-size: 12.5px; font-weight: 600; padding: 0; text-align: left; }
+  .reasons { list-style: none; margin: 6px 0 0; padding: 0; font-size: 12.5px; color: var(--ink-soft); }
+  .reasons li { padding: 3px 0; border-top: 1px dashed var(--line); }
+  .reasons li:first-child { border-top: none; }
+
+  .results-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+  .results-summary { font-size: 14.5px; font-weight: 700; }
+  .view-toggle { display: flex; gap: 4px; background: var(--page); border: 1px solid var(--line); border-radius: 9px; padding: 3px; }
+  .view-toggle button { background: none; border: none; padding: 6px 12px; font-size: 12.5px; font-weight: 600; border-radius: 7px; color: var(--ink-soft); }
+  .view-toggle button[aria-pressed="true"] { background: var(--card); color: var(--blue-600); box-shadow: var(--shadow); }
+  .map-placeholder { background: var(--card); border: 1px dashed var(--line); border-radius: 12px; padding: 50px 20px; text-align: center; color: var(--ink-faint); font-size: 13.5px; }
+
+  .empty { text-align: center; padding: 40px 20px; color: var(--ink-soft); font-size: 14px; }
+
+  .detail-back { background: none; border: none; color: var(--blue-600); font-weight: 600; font-size: 13.5px; padding: 0; margin-bottom: 14px; }
+  .detail-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow); margin-bottom: 20px; }
+  .detail-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; flex-wrap: wrap; }
+  .detail-name { font-size: 20px; font-weight: 800; margin: 8px 0 4px; }
+  .detail-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+  @media (max-width: 720px) { .detail-two-col { grid-template-columns: 1fr; } }
+  .panel { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); margin-bottom: 16px; }
+  .panel h3 { font-size: 14.5px; margin: 0 0 10px; display: flex; gap: 8px; align-items: center; }
+  .checklist-ok { background: var(--green-50); border: 1px solid #BFE7CE; color: var(--green-600); border-radius: 9px; padding: 10px 12px; font-size: 13px; margin-bottom: 8px; }
+  .checklist-item { font-size: 13.5px; color: var(--ink); padding: 3px 0; }
+  .kv-row { display: flex; justify-content: space-between; gap: 10px; font-size: 13.5px; padding: 6px 0; border-top: 1px solid var(--line); }
+  .kv-row:first-of-type { border-top: none; }
+  .kv-row label { color: var(--ink-soft); font-weight: 600; }
+  .pill-svc { background: var(--blue-100); color: var(--blue-700); font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; }
+  .svc-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+  .notes-box { font-size: 13px; color: var(--ink-soft); background: var(--page); border-radius: 8px; padding: 10px 12px; margin-top: 6px; }
+
+  .score-total { font-size: 26px; font-weight: 800; color: var(--blue-600); }
+  .score-total-label { font-size: 12px; color: var(--ink-soft); }
+  .score-bar-row { margin: 10px 0; }
+  .score-bar-top { display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 4px; }
+  .score-bar-track { height: 7px; background: var(--line); border-radius: 999px; overflow: hidden; }
+  .score-bar-fill { height: 100%; background: var(--blue-600); border-radius: 999px; }
+  .source-link { font-size: 13px; word-break: break-all; }
+  .feed-active { color: var(--green-600); font-weight: 700; }
+
+  .referral-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .referral-preview { background: var(--page); border: 1px solid var(--line); border-radius: 9px; padding: 12px; font-size: 12.5px; white-space: pre-wrap; margin-top: 10px; font-family: 'SF Mono', Consolas, monospace; color: var(--ink-soft); }
+
+  .save-btn { border: 1.5px solid var(--line); background: transparent; color: var(--ink); border-radius: 9px; padding: 8px 14px; font-size: 13px; font-weight: 700; display: flex; gap: 6px; align-items: center; }
+  .save-btn[aria-pressed="true"] { background: #FFF6E5; border-color: var(--amber-500); color: #92670A; }
+
+  .saved-item { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .saved-name { font-weight: 700; font-size: 14.5px; }
+  .saved-sub { font-size: 12.5px; color: var(--ink-soft); }
+  .remove-btn { background: none; border: none; color: var(--red-600); font-size: 13px; font-weight: 600; }
+
+  .about-tabs { display: flex; gap: 16px; border-bottom: 1px solid var(--line); margin-bottom: 20px; flex-wrap: wrap; }
+  .about-tabs button { background: none; border: none; padding: 0 0 10px; font-size: 13.5px; font-weight: 600; color: var(--ink-faint); border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .about-tabs button[aria-current="true"] { color: var(--blue-600); border-bottom-color: var(--blue-600); }
+  .about-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow); }
+  .about-card p { font-size: 14.5px; color: var(--ink-soft); }
+  .about-card ul { font-size: 14px; color: var(--ink-soft); }
+  .about-card h2 { margin-top: 0; }
+  .about-card h3 { font-size: 15.5px; margin: 20px 0 6px; }
+
+  footer { text-align: center; font-size: 12px; color: var(--ink-soft); padding: 20px 0 40px; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="hero-top">
+      <div class="brand"><span>🩺</span> CareAtZero</div>
+      <span class="badge">100% Free &amp; Open Access</span>
+    </div>
+    <p class="tagline">Find genuinely free, very-low-cost, and sliding-scale healthcare you can realistically access.</p>
+    <nav class="nav" id="nav"></nav>
+  </div>
+</header>
+
+<main class="wrap" id="main"></main>
+
+<footer>CareAtZero · Research Triangle Pilot &amp; National Safety Net Navigator · Sample data for demo purposes</footer>
+
+<script>
+/* ================= Data model & sample records ================= */
+function daysAgoISO(n){ const d=new Date(); d.setDate(d.getDate()-n); return d.toISOString(); }
+function futureDateISO(n){ const d=new Date(); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); }
+
+const FACILITY_LABEL = {
+  permanent: 'PERMANENT CLINIC',
+  mobile: 'MOBILE CLINIC',
+  pop_up: 'POP-UP EVENT',
+};
+
+const RECORDS = [
+  { id:'site-001', name:'Student Health Action Coalition (SHAC) Free Clinic', recordType:'site', siteType:'permanent',
+    services:['medical','dental','vision','behavioral'], costClass:'Free',
+    eligibility:'Uninsured residents of the service area; no income documentation required',
+    address:'801 Lloyd St, Carrboro, NC 27510', lat:35.9101, lon:-79.0753,
+    uninsuredAccepted:true, appointmentRule:'walk_in',
+    appointmentPolicyText:'Walk-in lottery at 1:30 PM Wednesday, arrive early',
+    operatingHours:'Wednesday 1:00 PM – 5:30 PM',
+    documents:'None required', notes:'Oldest student-run free clinic in the US. Offers full dental extractions/cleanings, eye exams, free medications, and counseling.',
+    phone:'(800) 555-0101', website:'https://example.org/shac-free-clinic',
+    sourceName:'North Carolina Association of Free and Charitable Clinics (NCAFCC)',
+    sourceUrl:'https://example.org/ncafcc-directory', feedStatus:'ACTIVE',
+    lastChecked: daysAgoISO(2) },
+
+  { id:'site-002', name:'Durham Free Dental Clinic', recordType:'site', siteType:'permanent',
+    services:['dental'], costClass:'Free',
+    eligibility:'Uninsured adults, income under 200% federal poverty line',
+    address:'456 Elm St, Durham, NC 27701', lat:35.9940, lon:-78.8986,
+    uninsuredAccepted:true, appointmentRule:'walk_in',
+    appointmentPolicyText:'Walk-in, arrive before 12:30 PM to be seen same day',
+    operatingHours:'Saturday 9:00 AM – 1:00 PM',
+    documents:'Photo ID', notes:'',
+    phone:'(919) 555-0102', website:'https://example.org/durham-free-dental',
+    sourceName:'NC Association of Free and Charitable Clinics', sourceUrl:'https://example.org/ncafcc-directory',
+    feedStatus:'ACTIVE', lastChecked: daysAgoISO(6) },
+
+  { id:'site-003', name:'Wake Behavioral Health Access', recordType:'site', siteType:'permanent',
+    services:['behavioral'], costClass:'Very Low Cost',
+    eligibility:'Adults and adolescents; sliding scale for uninsured',
+    address:'789 Oak Ave, Raleigh, NC 27603', lat:35.7721, lon:-78.6386,
+    uninsuredAccepted:true, appointmentRule:'appointment_required',
+    appointmentPolicyText:'Call ahead to schedule an intake appointment',
+    operatingHours:'Monday–Thursday 9:00 AM – 6:00 PM',
+    documents:'Photo ID', notes:'',
+    phone:'(919) 555-0104', website:'https://example.org/wake-behavioral',
+    sourceName:'Wake County Human Services directory', sourceUrl:'https://example.org/wake-directory',
+    feedStatus:'ACTIVE', lastChecked: daysAgoISO(11) },
+
+  { id:'site-004', name:'Cary Vision Care Center', recordType:'site', siteType:'permanent',
+    services:['vision'], costClass:'Sliding Scale',
+    eligibility:'Open to Wake County residents; discounted exams and glasses for uninsured',
+    address:'220 Kildaire Farm Rd, Cary, NC 27511', lat:35.7915, lon:-78.7811,
+    uninsuredAccepted:true, appointmentRule:'appointment_required',
+    appointmentPolicyText:'Call to schedule; walk-ins seen if slots are open',
+    operatingHours:'Tuesday–Friday 9:00 AM – 4:00 PM',
+    documents:'Photo ID', notes:'',
+    phone:'(919) 555-0110', website:'https://example.org/cary-vision',
+    sourceName:'Wake County Human Services directory', sourceUrl:'https://example.org/wake-directory',
+    feedStatus:'ACTIVE', lastChecked: daysAgoISO(18) },
+
+  { id:'event-001', name:'Remote Area Medical (RAM) Free Clinic – Central NC', recordType:'event', siteType:'pop_up',
+    services:['medical','dental','vision'], costClass:'Free',
+    eligibility:'Open to all; no ID or income documentation required',
+    address:'1026 Blue Ridge Rd, Raleigh, NC 27607', lat:35.8033, lon:-78.6919,
+    uninsuredAccepted:true, appointmentRule:'walk_in',
+    appointmentPolicyText:'Ticket lottery opens at 12:00 AM; total attendance length of 3:00 AM, clinic doors open at 6:00 AM both days',
+    operatingHours:null,
+    documents:'None required', notes:'Bring any current prescription medications if taking any.',
+    phone:'(800) 555-0199', website:'https://example.org/ram-central-nc',
+    sourceName:'RAM Clinic public event calendar', sourceUrl:'https://example.org/ram-calendar',
+    feedStatus:'ACTIVE', lastChecked: daysAgoISO(3),
+    nextDate: futureDateISO(11), nextHours:'Ticket lottery opens at 12:00 AM; doors open at 6:00 AM both days' },
+
+  { id:'event-002', name:'Baptists on Mission Mobile Dental Bus Clinic', recordType:'event', siteType:'mobile',
+    services:['dental'], costClass:'Free',
+    eligibility:'Open to uninsured residents of Wake County',
+    address:'1001 Rock Quarry Rd, Raleigh, NC 27610', lat:35.7601, lon:-78.6386,
+    uninsuredAccepted:true, appointmentRule:'walk_in',
+    appointmentPolicyText:'Walk-in registration opens at 7:30 AM',
+    operatingHours:null,
+    documents:'None required', notes:'',
+    phone:'(919) 555-0155', website:'https://example.org/bom-mobile-dental',
+    sourceName:'Baptists on Mission public schedule', sourceUrl:'https://example.org/bom-schedule',
+    feedStatus:'ACTIVE', lastChecked: daysAgoISO(4),
+    nextDate: futureDateISO(2), nextHours:'Friday 8:30 AM – 4:00 PM' },
+
+  { id:'event-003', name:'Durham Safety-Net Free Dental & Wellness Fair', recordType:'event', siteType:'pop_up',
+    services:['medical','dental','behavioral'], costClass:'Free',
+    eligibility:'Open to all uninsured Durham County residents',
+    address:'401 W Chapel Hill St, Durham, NC 27701', lat:35.9950, lon:-78.9020,
+    uninsuredAccepted:true, appointmentRule:'walk_in',
+    appointmentPolicyText:'Walk-in registration opens at 8:30 AM',
+    operatingHours:null,
+    documents:'None required', notes:'',
+    phone:'(919) 555-0166', website:'https://example.org/durham-wellness-fair',
+    sourceName:'Durham County Public Health outreach calendar', sourceUrl:'https://example.org/durham-outreach',
+    feedStatus:'ACTIVE', lastChecked: daysAgoISO(1),
+    nextDate: futureDateISO(9), nextHours:'Saturday 9:00 AM – 1:00 PM' },
+
+  { id:'event-004', name:'Wake County Mobile Health & Free Vision Van', recordType:'event', siteType:'mobile',
+    services:['medical','vision'], costClass:'Free',
+    eligibility:'Open to all Wake County residents',
+    address:'Cravis Center Plaza, Raleigh, NC 27604', lat:35.7827, lon:-78.6428,
+    uninsuredAccepted:true, appointmentRule:'walk_in',
+    appointmentPolicyText:'Walk-in, first come first served',
+    operatingHours:null,
+    documents:'None required', notes:'',
+    phone:'(919) 555-0177', website:'https://example.org/wake-mobile-vision',
+    sourceName:'Wake County Mobile Health public schedule', sourceUrl:'https://example.org/wake-mobile-schedule',
+    feedStatus:'ACTIVE', lastChecked: daysAgoISO(1),
+    nextDate: futureDateISO(5), nextHours:'Tuesday 10:00 AM – 3:00 PM' },
+];
+
+const ZIP_COORDS = {
+  '27601':[35.7796,-78.6382], '27603':[35.7580,-78.6520], '27604':[35.8100,-78.5850], '27605':[35.7940,-78.6570],
+  '27607':[35.8080,-78.6920], '27610':[35.7570,-78.6000],
+  '27701':[35.9940,-78.8986], '27705':[36.0300,-78.9470], '27707':[35.9600,-78.9200],
+  '27510':[35.9101,-79.0753], '27514':[35.9132,-79.0558], '27516':[35.9299,-79.0803],
+  '27511':[35.7915,-78.7811], '27513':[35.8210,-78.8130],
+};
+function coordsForLocation(text){
+  const zip = (text||'').trim().match(/\d{5}/);
+  if (zip && ZIP_COORDS[zip[0]]) return ZIP_COORDS[zip[0]];
+  return [35.7796,-78.6382];
+}
+
+/* ================= Care Access scoring engine ================= */
+const WEIGHTS = { cost:0.35, time:0.25, service:0.15, eligibility:0.10, distance:0.10, freshness:0.05 };
+const WEIGHT_LABELS = {
+  cost: 'Cost Fit', time: 'Density & Availability', service: 'Service Match',
+  eligibility: 'Eligibility Confidence', distance: 'Distance Fit', freshness: 'Data Freshness',
+};
+const COST_RANK = { 'Free':100, 'Very Low Cost':75, 'Sliding Scale':55, 'Unknown':20 };
+
+function haversineMiles(lat1,lon1,lat2,lon2){
+  const R=3958.8, toRad=d=>d*Math.PI/180;
+  const dLat=toRad(lat2-lat1), dLon=toRad(lon2-lon1);
+  const a=Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+function scoreRecord(r, service, timing, userLat, userLon, filters){
+  filters = filters || {};
+  const cost = COST_RANK[r.costClass] ?? 20;
+  const costReason = `Cost category: ${r.costClass}`;
+
+  let time, timeReason;
+  if (r.nextDate){
+    const daysOut = Math.round((new Date(r.nextDate) - new Date(new Date().toDateString())) / 86400000);
+    if (daysOut < 0){ time=0; timeReason='Event has already passed'; }
+    else if (daysOut === 0){ time=100; timeReason='Available today'; }
+    else if (daysOut <= 7){ time=85; timeReason=`Upcoming in ${daysOut} day(s)`; }
+    else { time=Math.max(30,70-daysOut); timeReason=`Upcoming in ${daysOut} day(s)`; }
+  } else {
+    if (timing==='today' && r.appointmentRule==='walk_in'){ time=90; timeReason='Walk-in available during regular clinic hours'; }
+    else if (timing==='today'){ time=55; timeReason='Appointment required — may not be same-day'; }
+    else { time=75; timeReason='Ongoing permanent availability'; }
+  }
+
+  const hasService = r.services.includes(service);
+  const serviceScore = hasService ? 100 : 0;
+  const serviceReason = hasService ? `Direct match for requested ${service} services` : `Does not list ${service}`;
+
+  let elig, eligReason;
+  if (!r.uninsuredAccepted && filters.insuranceStatus==='uninsured'){ elig=10; eligReason='May not accept uninsured patients'; }
+  else if (r.eligibility && r.eligibility.length>10){ elig=85; eligReason='Open to all uninsured individuals residing in service coverage area'; }
+  else { elig=50; eligReason='Eligibility details limited'; }
+
+  const miles = haversineMiles(userLat,userLon,r.lat,r.lon);
+  let dist;
+  if (miles<=5){ dist=100; } else if (miles<=15){ dist=75; } else if (miles<=30){ dist=50; } else { dist=25; }
+  const distReason = `Very close proximity (${miles.toFixed(1)} mi) minimizing transit burden`;
+
+  const ageDays = Math.round((Date.now()-new Date(r.lastChecked))/86400000);
+  let fresh, freshReason;
+  if (ageDays<=7){ fresh=100; freshReason=`Source verified recently (${new Date(r.lastChecked).toISOString().slice(0,10)}) from official provider directory`; }
+  else if (ageDays<=30){ fresh=70; freshReason='Source checked within the last month'; }
+  else { fresh=30; freshReason='Source data may be outdated'; }
+
+  const sub = {
+    cost:       { score:cost,         reason: r.costClass==='Free' ? '100% Free care - $0 out-of-pocket cost for uninsured patients' : costReason },
+    time:       { score:time,         reason: timeReason },
+    service:    { score:serviceScore, reason: serviceReason },
+    eligibility:{ score:elig,         reason: eligReason },
+    distance:   { score:dist,         reason: distReason },
+    freshness:  { score:fresh,        reason: freshReason },
+  };
+  let total = 0;
+  Object.keys(sub).forEach(k=>{
+    sub[k].max = Math.round(WEIGHTS[k]*100);
+    sub[k].points = Math.round(sub[k].score*WEIGHTS[k]);
+    total += sub[k].score*WEIGHTS[k];
+  });
+
+  return { total: Math.round(total), sub, miles, reasons: Object.keys(sub).map(k=>sub[k].reason) };
+}
+
+/* ================= Small helpers ================= */
+const SERVICE_META = {
+  medical:   { icon:'🩺', label:'Medical Care', desc:'Primary care & exams' },
+  dental:    { icon:'🦷', label:'Dental Care',  desc:'Extractions & cleanings' },
+  vision:    { icon:'👓', label:'Vision Care',  desc:'Free exams & glasses' },
+  behavioral:{ icon:'🧠', label:'Behavioral Health', desc:'Counseling & crisis care' },
+};
+const COST_PILL = { 'Free':['pill-free','FREE'], 'Very Low Cost':['pill-vlow','VERY LOW COST'], 'Sliding Scale':['pill-sliding','SLIDING SCALE'], 'Unknown':['pill-sliding','UNKNOWN'] };
+
+function insuranceLabel(r){
+  if (r.costClass==='Free' && r.uninsuredAccepted) return 'Uninsured-Only Free';
+  if (r.uninsuredAccepted) return `${r.costClass} — accepts uninsured`;
+  return 'May not accept uninsured';
+}
+function facilityLabel(r){ return FACILITY_LABEL[r.siteType] || r.siteType.toUpperCase(); }
+function availabilityText(r){ return r.nextDate ? `${r.nextDate} — ${r.nextHours}` : r.operatingHours; }
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function referralText(r, score){
+  const lines = [
+    `CareAtZero Referral Summary`,
+    `============================`,
+    `${r.name}`,
+    `${facilityLabel(r)} · ${r.costClass}`,
+    ``,
+    `Address: ${r.address}`,
+    `Phone: ${r.phone}`,
+    `Website: ${r.website}`,
+    ``,
+    `${r.nextDate ? 'Next available: ' + r.nextDate + ' — ' + r.nextHours : 'Hours: ' + r.operatingHours}`,
+    `Appointment policy: ${r.appointmentPolicyText}`,
+    `Documents to bring: ${r.documents}`,
+    `Eligibility: ${r.eligibility}`,
+    ``,
+    `Care Access Score: ${score ? score.total : '—'}/100`,
+    `Source: ${r.sourceName} (last verified ${new Date(r.lastChecked).toISOString().slice(0,10)})`,
+    ``,
+    `Generated by CareAtZero — not medical advice.`,
+  ];
+  return lines.join('\n');
+}
+function downloadText(filename, text){
+  const blob = new Blob([text], {type:'text/plain'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+function downloadICS(r){
+  const dateStr = (r.nextDate || new Date().toISOString().slice(0,10)).replace(/-/g,'');
+  const ics = [
+    'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//CareAtZero//EN','BEGIN:VEVENT',
+    `UID:${r.id}@careatzero`, `DTSTAMP:${dateStr}T000000Z`, `DTSTART;VALUE=DATE:${dateStr}`,
+    `SUMMARY:${r.name}`, `LOCATION:${r.address}`,
+    `DESCRIPTION:${(r.nextDate ? r.nextHours : r.operatingHours || '').replace(/,/g,'\\,')} — bring: ${(r.documents||'').replace(/,/g,'\\,')}`,
+    'END:VEVENT','END:VCALENDAR',
+  ].join('\r\n');
+  downloadText(`${r.id}-careatzero.ics`, ics);
+}
+
+/* ================= App state ================= */
+const state = {
+  tab: 'home',
+  service: 'dental',
+  location: '27601',
+  timing: 'this_week',
+  insuranceStatus: 'uninsured',
+  walkInOnly: false,
+  results: null,
+  resultsView: 'list',
+  detailId: null,
+  detailFrom: 'home',
+  detailFallback: false,
+  aboutTab: 'mission',
+  saved: loadSaved(),
+  referralOpenId: null,
+};
+
+function loadSaved(){
+  try { return JSON.parse(localStorage.getItem('careatzero_saved') || '[]'); }
+  catch(e){ return []; }
+}
+function persistSaved(){
+  try { localStorage.setItem('careatzero_saved', JSON.stringify(state.saved)); }
+  catch(e){ /* storage unavailable this session */ }
+}
+function toggleSave(id){
+  const i = state.saved.indexOf(id);
+  if (i>=0) state.saved.splice(i,1); else state.saved.push(id);
+  persistSaved(); render();
+}
+
+function currentCoords(){ return coordsForLocation(state.location); }
+
+function computeResults(){
+  const [lat,lon] = currentCoords();
+  let matches = RECORDS.filter(r => r.services.includes(state.service));
+  if (state.walkInOnly) matches = matches.filter(r => r.appointmentRule==='walk_in');
+  return matches
+    .map(r => ({ record:r, score: scoreRecord(r, state.service, state.timing, lat, lon, {insuranceStatus:state.insuranceStatus}) }))
+    .sort((a,b) => b.score.total - a.score.total);
+}
+function runSearch(){ state.results = computeResults(); state.tab = 'find'; render(); }
+
+function goDetail(id, from){
+  state.detailId = id; state.detailFrom = from || state.tab; state.detailFallback = false;
+  state.tab = 'detail'; render();
+}
+function goDetailFallback(){
+  state.detailId = RECORDS[0].id; state.detailFrom = state.tab; state.detailFallback = true;
+  state.tab = 'detail'; render();
+}
+
+/* ================= Rendering ================= */
+const NAV_ITEMS = [ ['home','🏠','Home'], ['find','🔎','Find'], ['detail','📋','Detail'], ['saved','⭐','Saved'], ['about','ℹ️','About'] ];
+
+function render(){
+  const nav = document.getElementById('nav');
+  nav.innerHTML = NAV_ITEMS.map(([id,icon,label]) =>
+    `<button data-tab="${id}" aria-current="${state.tab===id?'page':'false'}">${icon} ${label}</button>`
+  ).join('');
+  nav.querySelectorAll('button').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      if (b.dataset.tab==='detail' && !state.detailId) { goDetailFallback(); return; }
+      state.tab=b.dataset.tab; render();
+    });
+  });
+
+  const main = document.getElementById('main');
+  if (state.tab==='home') main.innerHTML = renderHome();
+  else if (state.tab==='find') main.innerHTML = renderFind();
+  else if (state.tab==='detail') main.innerHTML = renderDetail();
+  else if (state.tab==='saved') main.innerHTML = renderSaved();
+  else main.innerHTML = renderAbout();
+
+  wireInteractive();
+  window.scrollTo({top:0, behavior:'auto'});
+}
+
+function emergencyBanner(){
+  return `<div class="emergency">🚨 <div><b>Medical emergency?</b> If experiencing a life-threatening emergency, call 911. For free 24/7 mental health &amp; suicide crisis support, dial <b>988</b>.</div></div>`;
+}
+function serviceGridHTML(){
+  return `<div class="service-grid">` + Object.entries(SERVICE_META).map(([key,m])=>`
+    <button class="service-card" data-service="${key}" aria-pressed="${state.service===key}">
+      <span class="service-icon">${m.icon}</span>
+      <span><span class="service-name">${m.label}</span><br><span class="service-desc">${m.desc}</span></span>
+    </button>`).join('') + `</div>`;
+}
+function searchFieldsHTML(){
+  return `
+  <div class="search-row">
+    <div class="field">
+      <label for="loc-input">Your Location (ZIP or City)*</label>
+      <input id="loc-input" type="text" value="${esc(state.location)}" placeholder="e.g., 27514, Raleigh, Cary">
+    </div>
+    <div class="field">
+      <label for="timing-select">When Care is Needed</label>
+      <select id="timing-select">
+        <option value="today" ${state.timing==='today'?'selected':''}>Today</option>
+        <option value="this_week" ${state.timing==='this_week'?'selected':''}>This Week</option>
+        <option value="flexible" ${state.timing==='flexible'?'selected':''}>Flexible</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="service-select">Service Needed*</label>
+      <select id="service-select">
+        ${Object.entries(SERVICE_META).map(([k,m])=>`<option value="${k}" ${state.service===k?'selected':''}>${m.label}</option>`).join('')}
+      </select>
+    </div>
+  </div>`;
+}
+
+function renderHome(){
+  const events = RECORDS.filter(r=>r.recordType==='event').slice(0,3);
+  return `
+  ${emergencyBanner()}
+  <section class="block">
+    <div class="block-head"><span class="block-icon">🎯</span><h2 class="block-title">What type of care do you need?</h2></div>
+    ${serviceGridHTML()}
+    <div class="search-card find-cta-row">
+      ${searchFieldsHTML()}
+      <div class="find-cta-row"><button class="btn-primary" id="find-btn" style="width:100%;">🔎 Find Free Care Now</button></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-num">50</div><div class="stat-label">Verified Safety Net Clinics</div></div>
+      <div class="stat-card"><div class="stat-num">18</div><div class="stat-label">Free Clinics (sites)</div></div>
+      <div class="stat-card"><div class="stat-num">6</div><div class="stat-label">Upcoming Mobile / Pop-up</div></div>
+      <div class="stat-card"><div class="stat-num">100%</div><div class="stat-label">Source Transparent &amp; Free</div></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="block-head"><span class="block-icon">🚐</span><h2 class="block-title">Upcoming Mobile &amp; Pop-up Free Care Clinics</h2></div>
+    <p class="block-sub">Pop-up clinics provide 100% free episodic care without insurance, ID, or income documentation. Arrive early for tickets.</p>
+    <div class="card-grid">
+      ${events.map(r=>{
+        const [pillClass,pillText] = COST_PILL[r.costClass];
+        return `
+        <div class="ev-card">
+          <div class="ev-top">
+            <span class="pill pill-outline">${facilityLabel(r)}</span>
+            <span class="pill ${pillClass}">${pillText}</span>
+          </div>
+          <span class="pill pill-date" style="align-self:flex-start;">${r.nextDate}</span>
+          <div class="ev-name">${r.name}</div>
+          <div class="ev-meta">📍 ${r.address}</div>
+          <div class="ev-meta">🩺 Services: ${r.services.join(', ')}</div>
+          <div class="ev-meta">🕒 ${r.nextHours}</div>
+          <button class="btn-outline" data-view="${r.id}" data-from="home">View Event Details</button>
+        </div>`;
+      }).join('')}
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="block-head"><span class="block-icon">💡</span><h2 class="block-title">Why CareAtZero Is Different</h2></div>
+    <div class="why-grid">
+      <div class="why-col">
+        <h3><span class="why-icon" style="background:var(--green-50);color:var(--green-600);">🏷️</span>1. Clear Cost Labels First</h3>
+        <ul>
+          <li><b>Free:</b> $0 patient charge, verified</li>
+          <li><b>Very Low Cost:</b> $5–25 nominal fee</li>
+          <li><b>Sliding Scale:</b> discounts based on income — never surprising or normal pricing</li>
+        </ul>
+      </div>
+      <div class="why-col">
+        <h3><span class="why-icon" style="background:var(--blue-100);color:var(--blue-600);">📊</span>2. Transparent Care Access Score</h3>
+        <ul>
+          <li>We rank options not just by distance, but by:</li>
+          <li>Cost fit (35%)</li>
+          <li>Upcoming availability / walk-in (25%)</li>
+          <li>Service match (15%)</li>
+          <li>Eligibility &amp; document readiness (10%)</li>
+          <li>Distance &amp; data freshness (15%)</li>
+        </ul>
+      </div>
+      <div class="why-col">
+        <h3><span class="why-icon" style="background:#FFF6E5;color:var(--amber-500);">🔒</span>3. Zero Cost &amp; Complete Privacy</h3>
+        <ul>
+          <li>No login or registration required</li>
+          <li>No medical history, SSN, or diagnosis stored</li>
+          <li>Zero cost forever for patients, navigators, and community organizations</li>
+        </ul>
+      </div>
+    </div>
+  </section>`;
+}
+
+function renderFind(){
+  const rows = state.results;
+  const svcLabel = SERVICE_META[state.service].label;
+  return `
+  <section class="block">
+    <div class="block-head"><span class="block-icon">🔍</span><h2 class="block-title">Find Free or Low-Cost Care</h2></div>
+    <p class="block-sub">Search verified free clinics, sliding-scale net centers, and upcoming mobile pop-ups.</p>
+    <div class="search-card">
+      <p class="search-step">1. Search Criteria</p>
+      ${searchFieldsHTML()}
+      <details class="filters-toggle">
+        <summary>Optional Filters and Eligibility Tuning (click to expand)</summary>
+        <div class="filters-body">
+          <div class="field">
+            <label for="insurance-select">Insurance status</label>
+            <select id="insurance-select">
+              <option value="uninsured" ${state.insuranceStatus==='uninsured'?'selected':''}>Uninsured</option>
+              <option value="underinsured" ${state.insuranceStatus==='underinsured'?'selected':''}>Underinsured</option>
+              <option value="prefer_not_to_say" ${state.insuranceStatus==='prefer_not_to_say'?'selected':''}>Prefer not to say</option>
+            </select>
+          </div>
+          <div class="checkbox-field">
+            <input type="checkbox" id="walkin-check" ${state.walkInOnly?'checked':''}>
+            <label for="walkin-check">Only show walk-in options</label>
+          </div>
+        </div>
+      </details>
+      <div class="find-cta-row"><button class="btn-primary" id="find-btn" style="width:100%;">🔎 Search</button></div>
+    </div>
+  </section>
+  <section class="block">
+    ${rows===null ? `<div class="empty">Set your search criteria above and hit Search to see ranked options.</div>` :
+      rows.length===0 ? `<div class="empty">No matching options in the sample data for “${svcLabel}” right now.</div>` :
+      `<div class="results-head">
+        <div class="results-summary">Results for ${svcLabel} near ${esc(state.location)} (${rows.length} option${rows.length===1?'':'s'} found)</div>
+        <div class="view-toggle">
+          <button data-view-mode="list" aria-pressed="${state.resultsView==='list'}">☰ List View</button>
+          <button data-view-mode="map" aria-pressed="${state.resultsView==='map'}">📍 Map View</button>
+        </div>
+      </div>
+      ${state.resultsView==='map' ? `<div class="map-placeholder">🗺️ Map view is coming soon — use List View for now to see and compare all ${rows.length} options.</div>` : `
+      <div class="card-grid" style="grid-template-columns:1fr;">
+        ${rows.map(({record:r,score})=>{
+          const [pillClass,pillText] = COST_PILL[r.costClass];
+          const isSaved = state.saved.includes(r.id);
+          return `
+          <div class="result-card">
+            <div class="ev-top">
+              <div class="pill-group">
+                <span class="pill ${pillClass}">${pillText}</span>
+                <span class="pill pill-outline">${facilityLabel(r)}</span>
+              </div>
+              <span class="pill pill-score">Care Access Score: ${score.total}/100</span>
+            </div>
+            <div class="ev-name">${r.name}</div>
+            <div class="ev-meta">📍 ${r.address} · ${score.miles.toFixed(1)} mi away</div>
+            <div class="ev-meta">🩺 Services: ${r.services.join(', ')}</div>
+            <div class="ev-meta">${r.nextDate ? '📅 Next available: '+r.nextDate+' · '+r.nextHours : '🕒 '+r.operatingHours}</div>
+            <div class="ev-meta">📄 What to bring: ${r.documents}</div>
+            <details>
+              <summary class="why-toggle">Why this matches</summary>
+              <ul class="reasons">${score.reasons.map(x=>`<li>${x}</li>`).join('')}</ul>
+            </details>
+            <p style="font-size:11.5px; color:var(--ink-faint); margin:2px 0 0;">Source: ${r.sourceName} · Last checked: ${new Date(r.lastChecked).toISOString().slice(0,10)}</p>
+            <div class="action-row">
+              <button class="btn-primary" data-view="${r.id}" data-from="find">View Full Details</button>
+              <button class="btn-outline" data-call="${r.phone}">📞 Call</button>
+              <button class="btn-outline" data-directions="${esc(r.address)}">🧭 Get Directions</button>
+              <button class="save-btn" data-save="${r.id}" aria-pressed="${isSaved}">⭐ ${isSaved?'Saved':'Save Option'}</button>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>`}`
+    }
+  </section>`;
+}
+
+function renderDetail(){
+  const r = RECORDS.find(x=>x.id===state.detailId);
+  if (!r) return `<div class="empty">Pick an option from Home or Find to see its details here.</div>`;
+  const isSaved = state.saved.includes(r.id);
+  const [pillClass,pillText] = COST_PILL[r.costClass];
+  const [lat,lon] = currentCoords();
+  const score = scoreRecord(r, state.service, state.timing, lat, lon, {insuranceStatus:state.insuranceStatus});
+  const referralOpen = state.referralOpenId === r.id;
+
+  return `
+  <button class="detail-back" data-back="1">← Back to Results</button>
+  ${state.detailFallback ? `<div class="info-banner">No specific care option selected. Showing default safety-net option.</div>` : ''}
+
+  <div class="detail-card">
+    <div class="detail-head">
+      <div>
+        <div class="pill-group">
+          <span class="pill ${pillClass}">${pillText}</span>
+          <span class="pill pill-outline">${facilityLabel(r)}</span>
+        </div>
+        <h1 class="detail-name">${r.name}</h1>
+        <div class="ev-meta">📍 ${r.address} · ${score.miles.toFixed(1)} miles from you</div>
+      </div>
+    </div>
+    <div class="pill-group" style="margin-top:10px;">
+      <span class="pill pill-score">Care Access Score: ${score.total}/100</span>
+      <span class="pill pill-outline">Uninsured Acceptance: ${insuranceLabel(r)}</span>
+      <span class="pill pill-outline">${r.documents==='None required' ? '0' : r.documents.split(',').length} Document(s) Required</span>
+    </div>
+    <div class="action-row">
+      <button class="btn-primary" data-call="${r.phone}">📞 ${r.phone}</button>
+      <button class="btn-outline" data-directions="${esc(r.address)}">🧭 Get Directions</button>
+      <button class="btn-outline" data-ics="${r.id}">🗓️ Add to Calendar</button>
+      <button class="save-btn" data-save="${r.id}" aria-pressed="${isSaved}">⭐ ${isSaved?'Saved':'Save this Option'}</button>
+    </div>
+  </div>
+
+  <div class="detail-two-col">
+    <div>
+      <div class="panel">
+        <h3>📝 What to Bring Checklist</h3>
+        <p style="font-size:12.5px;color:var(--ink-soft);margin-top:0;">Review these items before your visit.</p>
+        ${r.documents==='None required'
+          ? `<div class="checklist-ok">✓ No ID or income documentation required for this event/clinic.</div>`
+          : `<div class="checklist-item">☐ ${r.documents.split(',').join('</div><div class="checklist-item">☐ ')}</div>`}
+        ${r.notes ? `<div class="checklist-item">☐ ${r.notes}</div>` : ''}
+      </div>
+
+      <div class="panel">
+        <h3>🕐 Schedule &amp; Admission Policy</h3>
+        <div class="kv-row"><label>${r.nextDate ? 'Event Date' : 'Operating Hours'}</label><span>${availabilityText(r)}</span></div>
+        <div class="kv-row"><label>Appointment Rule</label><span>${r.appointmentPolicyText}</span></div>
+        <div class="kv-row"><label>Facility Type</label><span>${facilityLabel(r)}</span></div>
+      </div>
+
+      <div class="panel">
+        <h3>🩺 Services Offered</h3>
+        <div class="svc-row">${r.services.map(s=>`<span class="pill-svc">${SERVICE_META[s].label}</span>`).join('')}</div>
+        ${r.notes ? `<div class="notes-box"><b>Special Notes:</b> ${r.notes}</div>` : ''}
+      </div>
+    </div>
+
+    <div>
+      <div class="panel">
+        <h3>🎯 Care Access Score Breakdown</h3>
+        <div><span class="score-total">${score.total}</span><span class="score-total-label"> /100 (Transparent 100-Point Model)</span></div>
+        ${Object.entries(score.sub).map(([key,s])=>`
+          <div class="score-bar-row">
+            <div class="score-bar-top"><span>${WEIGHT_LABELS[key]} (${Math.round(WEIGHTS[key]*100)}%)</span><span>${s.points} pts</span></div>
+            <div class="score-bar-track"><div class="score-bar-fill" style="width:${(s.points/s.max*100)}%;"></div></div>
+          </div>`).join('')}
+        <p style="font-size:12.5px;font-weight:700;margin:14px 0 6px;">Why this matches:</p>
+        <ul class="reasons">${score.reasons.map(x=>`<li>${x}</li>`).join('')}</ul>
+      </div>
+
+      <div class="panel">
+        <h3>🌐 Source Provenance &amp; Freshness</h3>
+        <div class="kv-row"><label>Primary Source</label><span class="source-link"><a href="${r.sourceUrl}" target="_blank" rel="noopener">${r.sourceName}</a></span></div>
+        <div class="kv-row"><label>Last Verified</label><span>${new Date(r.lastChecked).toISOString().slice(0,10)}</span></div>
+        <div class="kv-row"><label>Feed Status</label><span class="feed-active">${r.feedStatus}</span></div>
+        <div class="kv-row"><label>Official Website</label><span class="source-link"><a href="${r.website}" target="_blank" rel="noopener">${r.website}</a></span></div>
+      </div>
+
+      <div class="panel">
+        <h3>🖨️ Share / Print Referral Summary</h3>
+        <div class="referral-actions">
+          <button class="btn-outline" data-ref-download="${r.id}">⬇️ Download Referral Summary (.txt)</button>
+          <button class="btn-outline" data-ref-preview="${r.id}">${referralOpen?'Hide':'Preview'} Shareable Text</button>
+        </div>
+        ${referralOpen ? `<div class="referral-preview">${esc(referralText(r, score))}</div>` : ''}
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderSaved(){
+  if (state.saved.length===0) return `
+    <section class="block">
+      <div class="block-head"><span class="block-icon">⭐</span><h2 class="block-title">My Saved Care Options</h2></div>
+      <p class="block-sub">Keep track of clinics and pop-up events you want to visit. Saved locally on your device.</p>
+      <div class="info-banner">You haven't saved any care options yet. When you search for free clinics or mobile events, click “Save Option” to bookmark them here for quick access.</div>
+      <button class="btn-primary" data-goto-find="1">🔎 Find New Care Now</button>
+    </section>`;
+  return `
+  <section class="block">
+    <div class="block-head"><span class="block-icon">⭐</span><h2 class="block-title">My Saved Care Options</h2></div>
+    <p class="block-sub">Keep track of clinics and pop-up events you want to visit. Saved locally on your device.</p>
+    ${state.saved.map(id=>{
+      const r = RECORDS.find(x=>x.id===id);
+      if (!r) return '';
+      return `
+      <div class="saved-item">
+        <div><div class="saved-name">${r.name}</div><div class="saved-sub">${r.address}</div></div>
+        <div style="display:flex; gap:14px; align-items:center;">
+          <button class="btn-outline" data-view="${r.id}" data-from="saved">View</button>
+          <button class="remove-btn" data-save="${r.id}">Remove</button>
+        </div>
+      </div>`;
+    }).join('')}
+  </section>`;
+}
+
+const ABOUT_TABS = [
+  ['mission','Mission & Overview'], ['scoring','Transparent Scoring'],
+  ['sources','Sources & Methods'], ['privacy','Privacy & Emergency Safety'],
+];
+function renderAbout(){
+  const tabBar = `<div class="about-tabs">${ABOUT_TABS.map(([k,label])=>
+    `<button data-about-tab="${k}" aria-current="${state.aboutTab===k}">${label}</button>`).join('')}</div>`;
+
+  let body = '';
+  if (state.aboutTab==='mission'){
+    body = `
+    <h2>Our Mission</h2>
+    <p>CareAtZero is a free, mobile-first web application designed to help uninsured and low-income individuals and families find genuinely free or very-low-cost medical, dental, vision, and behavioral healthcare they can realistically access soon.</p>
+    <h3>The Problem We Solve</h3>
+    <p>Free and safety-net healthcare exists, but the information is fragmented across federal directories, charitable clinic networks, mobile clinic calendars, and local public health feeds. An uninsured person often faces:</p>
+    <ul>
+      <li>Calling clinics only to find out they are not free or require insurance</li>
+      <li>Missing time-sensitive pop-up events (like RAM or mobile dental buses)</li>
+      <li>Arriving without required income or residency documents</li>
+      <li>Searching directories that rank by distance rather than the realistic time to care</li>
+    </ul>
+    <p>CareAtZero bridges this gap by normalizing safety-net data, verifying cost tiers, scoring realistic accessibility, and giving patients a clear document checklist before they travel.</p>`;
+  } else if (state.aboutTab==='scoring'){
+    body = `
+    <h2>Transparent Scoring</h2>
+    <p>Every result gets a Care Access Score out of 100 — a plain weighted formula, never a black-box model. Judges, navigators, and patients can see exactly why an option ranked where it did.</p>
+    <ul>
+      <li><b>Cost Fit — 35%:</b> Free scores highest, then Very Low Cost, then Sliding Scale.</li>
+      <li><b>Density &amp; Availability — 25%:</b> rewards options open or walk-in-able soon.</li>
+      <li><b>Service Match — 15%:</b> only options offering the exact service searched are shown.</li>
+      <li><b>Eligibility Confidence — 10%:</b> how clearly documented the eligibility rules are.</li>
+      <li><b>Distance Fit — 10%:</b> closer options score higher, capped so cost still leads.</li>
+      <li><b>Data Freshness — 5%:</b> recently verified sources score higher than stale ones.</li>
+    </ul>`;
+  } else if (state.aboutTab==='sources'){
+    body = `
+    <h2>Sources &amp; Methods</h2>
+    <p>This preview runs on placeholder demo records so the search, scoring, and detail views can be tested end-to-end. Provider names shown here are illustrative — before any public demo or real use, each connector should pull from a real, citable source (state free-clinic associations, county health department calendars, RAM's public event schedule, etc.) and stamp every record with when it was last verified.</p>
+    <p>CareAtZero never marks an option "Free" unless the source explicitly says so, and never fabricates availability when a source can't be reached.</p>`;
+  } else {
+    body = `
+    <h2>Privacy &amp; Emergency Safety</h2>
+    <p>No login or account is required to use CareAtZero. Nothing you search is sent to or stored on a server — “Saved” options live only in your own browser's local storage.</p>
+    <p>CareAtZero does not diagnose symptoms, give medical advice, or store medical records. If you are experiencing a life-threatening emergency, call 911. For free 24/7 mental health and suicide crisis support, dial 988.</p>`;
+  }
+  return `<section class="block">
+    <div class="block-head"><span class="block-icon">ℹ️</span><h2 class="block-title">About CareAtZero &amp; Trust Standards</h2></div>
+    ${tabBar}
+    <div class="about-card">${body}</div>
+  </section>`;
+}
+
+/* ================= Wire up interactive elements ================= */
+function wireInteractive(){
+  document.querySelectorAll('[data-service]').forEach(b=>{
+    b.addEventListener('click', ()=>{ state.service=b.dataset.service; render(); });
+  });
+  const svcSelect = document.getElementById('service-select');
+  if (svcSelect) svcSelect.addEventListener('change', ()=>{ state.service = svcSelect.value; render(); });
+
+  const findBtn = document.getElementById('find-btn');
+  if (findBtn) findBtn.addEventListener('click', ()=>{
+    const loc = document.getElementById('loc-input');
+    const tim = document.getElementById('timing-select');
+    const ins = document.getElementById('insurance-select');
+    const walk = document.getElementById('walkin-check');
+    if (loc) state.location = loc.value || state.location;
+    if (tim) state.timing = tim.value;
+    if (ins) state.insuranceStatus = ins.value;
+    if (walk) state.walkInOnly = walk.checked;
+    runSearch();
+  });
+
+  document.querySelectorAll('[data-view-mode]').forEach(b=>{
+    b.addEventListener('click', ()=>{ state.resultsView = b.dataset.viewMode; render(); });
+  });
+  document.querySelectorAll('[data-view]').forEach(b=>{
+    b.addEventListener('click', ()=> goDetail(b.dataset.view, b.dataset.from));
+  });
+  document.querySelectorAll('[data-save]').forEach(b=>{
+    b.addEventListener('click', ()=> toggleSave(b.dataset.save));
+  });
+  document.querySelectorAll('[data-call]').forEach(b=>{
+    b.addEventListener('click', ()=>{ window.location.href = `tel:${b.dataset.call.replace(/[^0-9+]/g,'')}`; });
+  });
+  document.querySelectorAll('[data-directions]').forEach(b=>{
+    b.addEventListener('click', ()=>{ window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(b.dataset.directions)}`, '_blank', 'noopener'); });
+  });
+  document.querySelectorAll('[data-ics]').forEach(b=>{
+    b.addEventListener('click', ()=>{ const r = RECORDS.find(x=>x.id===b.dataset.ics); if (r) downloadICS(r); });
+  });
+  document.querySelectorAll('[data-ref-download]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const r = RECORDS.find(x=>x.id===b.dataset.refDownload);
+      const [lat,lon] = currentCoords();
+      const score = scoreRecord(r, state.service, state.timing, lat, lon, {insuranceStatus:state.insuranceStatus});
+      downloadText(`${r.id}-referral.txt`, referralText(r, score));
+    });
+  });
+  document.querySelectorAll('[data-ref-preview]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      state.referralOpenId = state.referralOpenId===b.dataset.refPreview ? null : b.dataset.refPreview;
+      render();
+    });
+  });
+  document.querySelectorAll('[data-about-tab]').forEach(b=>{
+    b.addEventListener('click', ()=>{ state.aboutTab = b.dataset.aboutTab; render(); });
+  });
+  const gotoFind = document.querySelector('[data-goto-find]');
+  if (gotoFind) gotoFind.addEventListener('click', ()=>{ state.tab='find'; render(); });
+  const back = document.querySelector('[data-back]');
+  if (back) back.addEventListener('click', ()=>{ state.tab = state.detailFrom || 'home'; render(); });
+}
+
+render();
+</script>
+</body>
+</html>
