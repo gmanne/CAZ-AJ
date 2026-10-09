@@ -27,8 +27,14 @@
     body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--navy); }
 
     /* The Streamlit app, full screen */
+    /* Streamlit Community Cloud adds a "Built with Streamlit · Fullscreen" bar under
+       every embedded app. The frame is made this much taller than the screen so
+       that bar sits just below the visible area. If a thin strip of the bar still
+       shows, raise this number a little; if the tab bar looks cut off, lower it. */
+    :root { --cloud-bar: 52px; }
+    html, body { overflow: hidden; }
     #app {
-      position: fixed; inset: 0; width: 100%; height: 100%; border: 0;
+      position: fixed; top: 0; left: 0; width: 100%; height: calc(100% + var(--cloud-bar)); border: 0;
       padding-top: env(safe-area-inset-top); box-sizing: border-box; background: var(--bg);
     }
 
