@@ -1,0 +1,7 @@
+# Python cache files (created automatically when the app runs)
+__pycache__/
+*.pyc
+
+# Local virtual environments
+.venv/
+venv/

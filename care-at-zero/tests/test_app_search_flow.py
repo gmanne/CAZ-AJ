@@ -1,4 +1,10 @@
-"""Test the Find -> result card -> Detail flow with a mocked MCP client."""
+"""Test the Home search -> results -> clinic detail flow with a mocked MCP client.
+
+The real MCP server is replaced by fake_call_tool, so this runs offline and
+always returns the same clinic.
+
+Run from the tests folder:  python test_app_search_flow.py
+"""
 import sys
 import types
 
@@ -8,7 +14,7 @@ FAKE_SEARCH_RESULTS = [
         "cost_class": "Sliding Scale", "services": ["medical"], "address": "123 Main St, Raleigh, NC",
         "score": 78.5, "why_this_matches": ["Cost category: Sliding Scale", "0.1 mi away"],
         "next_date": None, "next_hours": None, "appointment_rule": "appointment_required",
-        "source_name": "HRSA Health Care Service Delivery Sites",
+        "source_name": "HRSA Health Care Service Delivery Sites", "phone": "919-555-0000",
     }
 ]
 FAKE_DETAIL = {
@@ -32,18 +38,25 @@ FAKE_DETAIL = {
         },
     },
 }
+REFERRAL = "CareAtZero Referral Summary\n============================\nTest Community Health Center"
+
+calls = []
+
 
 def fake_call_tool(tool_name, arguments=None):
+    calls.append((tool_name, arguments))
     if tool_name == "search_care":
         return FAKE_SEARCH_RESULTS
     if tool_name == "get_care_detail":
         return FAKE_DETAIL
     if tool_name == "get_referral_summary":
-        return "CareAtZero Referral Summary\n============================\nTest Community Health Center"
+        return REFERRAL
     return {}
+
 
 class FakeMCPUnavailableError(Exception):
     pass
+
 
 fake_module = types.ModuleType("utils.mcp_client")
 fake_module.call_tool = fake_call_tool
@@ -56,36 +69,32 @@ at = AppTest.from_file("../app.py")
 at.run(timeout=20)
 assert not at.exception, f"Initial load raised: {at.exception}"
 
-find_btn = [b for b in at.button if b.label == "Find"][0]
-find_btn.click().run(timeout=20)
-assert not at.exception
 
-submit_btns = [b for b in at.button if "Find Care" in b.label]
-print("Submit buttons found:", [b.label for b in submit_btns])
-submit_btns[0].click().run(timeout=20)
-print("\n=== AFTER SUBMITTING SEARCH ===")
-print("Exceptions:", at.exception)
+def page_text():
+    return " ".join(m.value for m in at.markdown)
+
+
+print("=== SEARCH FROM HOME ===")
+submit = [b for b in at.button if b.label == "Find free care"][0]
+submit.click().run(timeout=20)
 assert not at.exception, f"Search submit raised: {at.exception}"
-print("Markdown snippets:", [m.value[:60] for m in at.markdown][:10])
-assert any("Test Community Health Center" in m.value for m in at.markdown)
+search_args = [a for name, a in calls if name == "search_care"][0]
+assert search_args["service"] == "medical", "Medical is the default care type"
+assert "Test Community Health Center" in page_text()
+assert "SLIDING SCALE" in page_text(), "Cost label should be shown first on the card"
+assert "Find care" in page_text(), "Searching from Home should open the Find tab"
 
-view_btns = [b for b in at.button if "View Details" in b.label]
-print("View Details buttons:", len(view_btns))
-view_btns[0].click().run(timeout=20)
-print("\n=== AFTER CLICKING View Details ===")
-print("Exceptions:", at.exception)
+print("=== OPEN CLINIC DETAIL ===")
+[b for b in at.button if b.label == "Details"][0].click().run(timeout=20)
 assert not at.exception, f"Detail view raised: {at.exception}"
-titles = [t.value for t in at.title]
-print("Titles:", titles)
-assert any("Test Community Health Center" in t for t in titles)
-print("Markdown (score breakdown check):", [m.value[:50] for m in at.markdown if "Score" in m.value or "%" in m.value][:5])
+assert "Test Community Health Center" in page_text()
+assert "Care Access Score" in page_text()
+assert not [b for b in at.button if "Save" in b.label], "Save was replaced by Download info"
+assert any(c.value == REFERRAL for c in at.code), "Copy-this-info text should be on the detail screen"
 
-# Try saving from detail page
-save_btns = [b for b in at.button if "Save" in b.label]
-print("Save buttons on detail page:", [b.label for b in save_btns])
-save_btns[0].click().run(timeout=20)
-print("\n=== AFTER CLICKING Save ===")
-print("Exceptions:", at.exception)
-assert not at.exception, f"Save raised: {at.exception}"
+print("=== BACK TO RESULTS ===")
+[b for b in at.button if b.label == "Back"][0].click().run(timeout=20)
+assert not at.exception, f"Back raised: {at.exception}"
+assert "Find care" in page_text()
 
 print("\n=== ALL SEARCH-FLOW CHECKS PASSED ===")

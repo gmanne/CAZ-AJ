@@ -1,57 +1,65 @@
-"""Headless smoke test using Streamlit's AppTest framework."""
+"""Headless smoke test using Streamlit's AppTest framework.
+
+Checks that every tab in the bottom tab bar (Home, Find, Help, About) opens
+without errors and shows what it should.
+
+Run from the tests folder:  python test_app_navigation.py
+"""
 from streamlit.testing.v1 import AppTest
 
 at = AppTest.from_file("../app.py")
 at.run(timeout=20)
 
+
+def labels():
+    return [b.label for b in at.button]
+
+
+def click(label):
+    [b for b in at.button if b.label == label][0].click().run(timeout=20)
+    assert not at.exception, f"App raised after clicking {label}: {at.exception}"
+
+
+def page_text():
+    return " ".join(m.value for m in at.markdown)
+
+
 print("=== INITIAL LOAD (Home) ===")
-print("Exceptions:", at.exception)
-print("Buttons found:", [b.label for b in at.button])
-print("Headers/subheaders:", [h.value for h in at.subheader])
-
 assert not at.exception, f"App raised on initial load: {at.exception}"
-assert "Home" in [b.label for b in at.button]
-assert "Find" in [b.label for b in at.button]
+for tab in ["Home", "Find", "Help", "About"]:
+    assert tab in labels(), f"Bottom tab '{tab}' missing"
+assert "Saved" not in labels(), "Saved tab should be gone (no accounts, so Save only lasted one visit)"
+assert "Find free care near you" in page_text()
 
-# --- Click "Find" nav button ---
-find_btn = [b for b in at.button if b.label == "Find"][0]
-find_btn.click().run(timeout=20)
-print("\n=== AFTER CLICKING Find ===")
-print("Exceptions:", at.exception)
-print("Subheaders:", [h.value for h in at.subheader])
-assert not at.exception, f"App raised after clicking Find: {at.exception}"
-assert any("Find Free or Low-Cost Care" in h.value for h in at.subheader)
+# Home: ZIP field is generic (not NC-only), Medical is the default care type
+assert any(ti.label == "Where are you? (ZIP code)" for ti in at.text_input)
+assert at.text_input[0].value == "27601"
+medical = [b for b in at.button if b.label.startswith("Medical")][0]
+assert medical.proto.type == "primary", "Medical should be selected by default"
+assert any("When do you need care" in sc.label for sc in at.segmented_control)
+assert any("Insurance status" in sb.label for sb in at.selectbox)
 
-# --- Check the search form widgets exist on Find page ---
-print("Selectboxes:", [(sb.label) for sb in at.selectbox])
-print("Text inputs:", [(ti.label) for ti in at.text_input])
-assert any("When do you need care" in sb.label for sb in at.selectbox)
-assert any("ZIP code" in ti.label for ti in at.text_input)
-assert any("Select" in b.label or "Selected" in b.label for b in at.button)  # service picker cards present
+print("=== Find ===")
+click("Find")
+assert "Find care" in page_text()
+assert any("Set your search above" in i.value for i in at.info)
 
-# --- Click "Saved" nav button (empty state) ---
-saved_btn = [b for b in at.button if b.label == "Saved"][0]
-saved_btn.click().run(timeout=20)
-print("\n=== AFTER CLICKING Saved ===")
-print("Exceptions:", at.exception)
-print("Info messages:", [i.value for i in at.info])
-assert not at.exception, f"App raised after clicking Saved: {at.exception}"
+print("=== Help ===")
+click("Help")
+assert "Get help now" in page_text()
+assert "tel:911" in page_text() and "tel:988" in page_text()
 
-# --- Click "About" nav button ---
-about_btn = [b for b in at.button if b.label == "About"][0]
-about_btn.click().run(timeout=20)
-print("\n=== AFTER CLICKING About ===")
-print("Exceptions:", at.exception)
-print("Radio options:", [r.options for r in at.radio])
-assert not at.exception, f"App raised after clicking About: {at.exception}"
-assert any("Mission" in r.options for r in at.radio)
+print("=== About ===")
+click("About")
+about = [sc for sc in at.segmented_control if "Mission" in sc.options][0]
+for section in ["Mission", "Scoring", "Sources", "Privacy"]:
+    about.set_value(section).run(timeout=20)
+    assert not at.exception, f"About > {section} raised: {at.exception}"
+    about = [sc for sc in at.segmented_control if "Mission" in sc.options][0]
+assert "Download info" in page_text(), "Privacy should explain Download info, not saving"
 
-# --- Click "Detail" nav button with nothing selected yet ---
-detail_btn = [b for b in at.button if b.label == "Detail"][0]
-detail_btn.click().run(timeout=20)
-print("\n=== AFTER CLICKING Detail (nothing selected) ===")
-print("Exceptions:", at.exception)
-print("Info messages:", [i.value for i in at.info])
-assert not at.exception, f"App raised after clicking Detail: {at.exception}"
+print("=== Home again ===")
+click("Home")
+assert "Find free care near you" in page_text()
 
-print("\n=== ALL CHECKS PASSED ===")
+print("\n=== ALL NAVIGATION CHECKS PASSED ===")
